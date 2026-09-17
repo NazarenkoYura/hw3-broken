@@ -1,14 +1,14 @@
 {
-  "version": "v1",
+  "version": "v2",
   "files": 3,
   "rows_scanned": 85085,
-  "candidates": 6886,
-  "rows_written": 2200,
+  "candidates": 11943,
+  "rows_written": 6000,
   "dropped_topic_filter": 9013,
-  "dropped_topic_cap": 69186,
-  "dropped_no_answer": 1035,
+  "dropped_topic_cap": 64129,
+  "dropped_no_answer": 4815,
   "topics_filter": 125,
-  "max_per_topic": 60,
+  "max_per_topic": 120,
   "min_answer_score": 1,
   "system_prompt_variants": 5
 }
