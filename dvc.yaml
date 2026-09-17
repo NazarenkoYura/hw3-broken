@@ -11,20 +11,32 @@ stages:
   collect:
     cmd: python -m src.collect
     deps:
-      # TODO: добавить сюда путь к СВОЕМУ источнику данных.
-      # Без этого dvc не заметит, что источник изменился, и не пересчитает стадию.
+      # Источник студента: без этих строк dvc не заметит, что данные изменились.
+      - dataset/Questions.csv
+      - dataset/Answers.csv
+      - dataset/Tags.csv
       - src/collect.py
       - src/config.py
+    params:
+      # Секция collect целиком: там живёт version. Без params смена версии в
+      # params.yaml не инвалидировала бы стадию — dvc решил бы, что
+      # пересчитывать нечего, и оставил артефакты прошлой версии.
+      - collect
     outs:
       - data/raw.jsonl
+    metrics:
+      - metrics/collect.json:
+          cache: false
 
   clean:
     cmd: python -m src.clean
     deps:
+      - data/raw.jsonl
       - src/clean.py
       - src/dedup.py
       - src/pii.py
       - src/schema.py
+      - src/stats.py
       - src/textnorm.py
       - src/config.py
     params:
@@ -70,7 +82,11 @@ stages:
       - paths.val
       - paths.test
     outs:
+      # val и test тоже выходы стадии: не объявишь их в outs — они не попадут
+      # под управление DVC и не будут версионироваться.
       - data/train.jsonl
+      - data/val.jsonl
+      - data/test.jsonl
     metrics:
       - metrics/split.json:
           cache: false

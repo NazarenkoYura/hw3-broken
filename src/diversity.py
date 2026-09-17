@@ -13,9 +13,14 @@
 """
 
 import json
+import sys
 import time
 from collections import Counter
 from pathlib import Path
+
+for _stream in (sys.stdout, sys.stderr):
+    if hasattr(_stream, "reconfigure"):
+        _stream.reconfigure(encoding="utf-8", errors="replace")
 
 from src.config import load_params
 from src.schema import iter_examples
@@ -113,28 +118,30 @@ def main() -> None:
     stats = measure(paths["clean"], params["split"]["group_key"])
     failed = violations(stats, cfg)
 
+    elapsed = round(time.perf_counter() - started, 2)
     metrics = {
         "version": params["collect"]["version"],
         **stats,
         "thresholds": dict(cfg),
         "violations": failed,
         "passed": not failed,
-        "seconds": round(time.perf_counter() - started, 2),
     }
     mpath = Path(paths["metrics_diversity"])
     mpath.parent.mkdir(parents=True, exist_ok=True)
     mpath.write_text(json.dumps(metrics, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
     if failed:
-        # TODO: гейт или отчёт? Стадия, которая сообщает о проблеме и продолжает,
+        # Гейт, а не отчёт: стадия, которая сообщает о проблеме и продолжает,
         # не мешает вырожденному набору доехать до обучения.
-        print("diversity: предупреждение — " + "; ".join(failed))
+        raise DiversityError(
+            "набор не прошёл гейт разнообразия:\n  - " + "\n  - ".join(failed)
+        )
 
     print(
         f"diversity: {stats['examples']} строк, {stats['system_prompts']} системных промптов, "
         f"{stats['groups']} групп (крупнейшая {stats['largest_group_share']:.1%}), "
         f"разброс длин p90/p10 = {stats['answer_len']['ratio_p90_p10']}, "
-        f"{metrics['seconds']} с"
+        f"{elapsed} с"
     )
 
 

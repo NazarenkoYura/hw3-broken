@@ -10,8 +10,8 @@ def load_params(path: str = "params.yaml") -> dict:
     return yaml.safe_load(Path(path).read_text(encoding="utf-8"))
 
 
-def source_files(params: dict) -> list[Path]:
-    """Файлы-источники для текущей версии датасета.
+def source_files(params: dict) -> dict[str, Path]:
+    """Файлы-источники текущей версии датасета: {"questions", "answers", "tags"}.
 
     Версия живёт в params, а не в аргументах командной строки: иначе
     dvc.lock не запомнит, из чего собран артефакт.
@@ -23,8 +23,14 @@ def source_files(params: dict) -> list[Path]:
             f"collect.version = {version!r}, но в collect.sources "
             f"есть только {sorted(sources)}"
         )
-    files = [Path(p) for p in sources[version]]
-    missing = [f for f in files if not f.exists()]
+    spec = sources[version]
+    if not isinstance(spec, dict):
+        raise SystemExit(
+            f"collect.sources[{version!r}] должен быть словарём с ключами "
+            "questions/answers/tags"
+        )
+    files = {role: Path(p) for role, p in spec.items()}
+    missing = [f for f in files.values() if not f.exists()]
     if missing:
         # Первое, обо что спотыкается каждый: пакет приходит настроенным на
         # курсовой датасет, которого у студента нет. Сообщение должно говорить,

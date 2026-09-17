@@ -4,39 +4,181 @@
 collect:
   # Версия датасета переключается ЗДЕСЬ. Всё остальное — следствие.
   version: "v1"              # v1 | v2
-  n_rows: 3000               # строк, берём из каждого файла-источника ПОСЛЕ фильтров
+
+  # Источник — выгрузка Stack Exchange (Cross Validated: сайт вопросов и ответов
+  # по статистике и машинному обучению). Три CSV-файла: вопросы, ответы, теги.
+  # Пути дублируются в deps стадии collect в dvc.yaml: dvc.yaml не умеет читать
+  # params, поэтому согласованность проверяется в tests/check.sh.
   sources:
     v1:
-      - "../../datasets/nmo/sft_single/train/0000.parquet"
+      questions: "dataset/Questions.csv"
+      answers: "dataset/Answers.csv"
+      tags: "dataset/Tags.csv"
     v2:
-      - "../../datasets/nmo/sft_single/train/0000.parquet"
-      - "../../datasets/nmo/sft_single/train/0001.parquet"
+      questions: "dataset/Questions.csv"
+      answers: "dataset/Answers.csv"
+      tags: "dataset/Tags.csv"
+
+  # Объём среза — по версиям. v1 — базовая, v2 — расширенная: больше строк и
+  # выше потолок на тему (потолок держит долю крупнейшей группы под
+  # diversity.max_group_share). Меняется только это, контракт raw.jsonl тот же.
+  n_rows:
+    v1: 2200
+    v2: 6000
+  max_per_topic:
+    v1: 60
+    v2: 120
 
   # --- Переработка источника ---
-  # Чужой готовый набор — это сырьё, а не сдача (см. README, «Готовый датасет
-  # как источник»). Три параметра ниже — то, чем эталон отличается от «скачал
-  # parquet и переименовал в raw.jsonl». Каждый из них обязан быть отражён
-  # в docs/datasheet.md.
+  # Чужой готовый набор — это сырьё, а не сдача (README, «Готовый датасет как
+  # источник»). Три блока ниже — то, чем эталон отличается от «скачал CSV и
+  # переименовал в raw.jsonl». Каждый обязан быть отражён в docs/datasheet.md.
 
-  topics: null               # null — все темы источника;
-                             # список тем — сузить набор до своей предметной области.
-                             # Сужение — законная переработка, но следите за
-                             # diversity.min_groups: одна тема не датасет.
+  # «Сужение»: своя предметная область — 125 тегов статистики и машинного
+  # обучения. Вопросы остальных тем в датасет не попадают (счётчик в метриках).
+  # null — не сужать (все темы источника).
+  topics:
+    - "r"
+    - "regression"
+    - "machine-learning"
+    - "time-series"
+    - "probability"
+    - "hypothesis-testing"
+    - "self-study"
+    - "distributions"
+    - "logistic"
+    - "classification"
+    - "correlation"
+    - "statistical-significance"
+    - "bayesian"
+    - "anova"
+    - "normal-distribution"
+    - "multiple-regression"
+    - "mixed-model"
+    - "clustering"
+    - "neural-networks"
+    - "mathematical-statistics"
+    - "confidence-interval"
+    - "categorical-data"
+    - "generalized-linear-model"
+    - "variance"
+    - "data-visualization"
+    - "estimation"
+    - "forecasting"
+    - "t-test"
+    - "pca"
+    - "sampling"
+    - "cross-validation"
+    - "repeated-measures"
+    - "spss"
+    - "svm"
+    - "chi-squared"
+    - "maximum-likelihood"
+    - "predictive-models"
+    - "multivariate-analysis"
+    - "survival"
+    - "data-transformation"
+    - "modeling"
+    - "p-value"
+    - "feature-selection"
+    - "econometrics"
+    - "panel-data"
+    - "python"
+    - "data-mining"
+    - "interaction"
+    - "linear-model"
+    - "binomial"
+    - "random-forest"
+    - "nonparametric"
+    - "arima"
+    - "optimization"
+    - "least-squares"
+    - "model-selection"
+    - "standard-deviation"
+    - "poisson"
+    - "interpretation"
+    - "sample-size"
+    - "mean"
+    - "dataset"
+    - "conditional-probability"
+    - "prediction"
+    - "multiple-comparisons"
+    - "bootstrap"
+    - "experiment-design"
+    - "random-variable"
+    - "autocorrelation"
+    - "simulation"
+    - "covariance"
+    - "missing-data"
+    - "expected-value"
+    - "regression-coefficients"
+    - "factor-analysis"
+    - "mcmc"
+    - "outliers"
+    - "standard-error"
+    - "inference"
+    - "ordinal"
+    - "deep-learning"
+    - "cart"
+    - "residuals"
+    - "binary-data"
+    - "random-effects-model"
+    - "goodness-of-fit"
+    - "stochastic-processes"
+    - "nonlinear-regression"
+    - "cox-model"
+    - "monte-carlo"
+    - "proportion"
+    - "lasso"
+    - "heteroscedasticity"
+    - "meta-analysis"
+    - "k-means"
+    - "scikit-learn"
+    - "multicollinearity"
+    - "text-mining"
+    - "aic"
+    - "descriptive-statistics"
+    - "matrix"
+    - "likelihood"
+    - "dimensionality-reduction"
+    - "bias"
+    - "fixed-effects-model"
+    - "effect-size"
+    - "normality"
+    - "power-analysis"
+    - "roc"
+    - "count-data"
+    - "prior"
+    - "stationarity"
+    - "kernel-trick"
+    - "naive-bayes"
+    - "regularization"
+    - "gaussian-process"
+    - "causality"
+    - "validation"
+    - "quantiles"
+    - "posterior"
+    - "robust"
+    - "gradient-descent"
+    - "odds-ratio"
+    - "bayes"
+    - "garch"
 
-  verify_answer_index: true  # сверять ответ ассистента с correct_choice_indices
-                             # источника. Чужую разметку не принимаем на веру:
-                             # расхождение — строка выбрасывается и попадает в счётчик.
+  # «Переразметка»: связка «вопрос→ответ» берётся только для ответов, набравших
+  # голоса сообщества (Score ≥ min_answer_score). Если у вопроса нет такого
+  # ответа, вопрос отбрасывается и попадает в счётчик. Чужую слабую разметку не
+  # принимаем на веру.
+  min_answer_score: 1
 
-  system_prompts:            # В источнике системный промпт ОДИН на все 384k строк.
-                             # Модель, обученная на одной формулировке инструкции,
-                             # заучивает её как константу и ломается от перефраза.
-                             # Поэтому инструкция разведена на варианты; вариант
-                             # выбирается детерминированно по id примера.
-    - "Ты отвечаешь на русскоязычные тестовые вопросы НМО. Дан вопрос и варианты ответа с нумерацией с 0. Выбери один правильный вариант. Ответь только номером варианта и текстом ответа, без объяснений."
-    - "Перед тобой тестовый вопрос НМО на русском языке и варианты ответа, пронумерованные с нуля. Выбери единственный верный вариант и выведи его номер и текст. Ничего не объясняй."
-    - "Задача: выбрать один правильный ответ на вопрос НМО. Варианты пронумерованы начиная с 0. В ответе — только номер и текст выбранного варианта, без рассуждений."
-    - "Ты помогаешь готовиться к аккредитации НМО. Дан вопрос и пронумерованные с 0 варианты ответа. Назови один правильный вариант: сначала номер, затем его текст. Пояснений не добавляй."
-    - "Отвечай на вопросы НМО по клиническим рекомендациям. Варианты ответа пронумерованы с 0, верный ровно один. Выведи номер верного варианта и его текст — и больше ничего."
+  # «Обогащение»: в источнике системной инструкции нет вовсе, поэтому связка
+  # разведена на варианты инструкции; вариант выбирается детерминированно по id
+  # примера (sha1, а не встроенный hash(), — иначе raw.jsonl невоспроизводим).
+  system_prompts:
+    - "Ты отвечаешь на вопросы по статистике и машинному обучению. Дан вопрос пользователя; дай точный ответ по существу, при необходимости с формулой или примером кода."
+    - "Перед тобой вопрос с сайта вопросов и ответов по статистике. Ответь на него так, как ответил бы опытный аналитик: по делу, без воды и общих слов."
+    - "Ты — ассистент по анализу данных и статистике. Отвечай на вопрос пользователя кратко и по делу, объясняя ключевую идею и её обоснование."
+    - "Задача: ответить на вопрос по статистике или машинному обучению. Опирайся на общепринятые методы и, если уместно, приведи короткий пример на R или Python."
+    - "Дан вопрос по статистике или ML. Дай корректный ответ с обоснованием; если возможных решений несколько, назови основное и объясни выбор."
 
 clean:
   # Фильтр длин: слишком короткий пример — обрезок, слишком длинный — выброс.
@@ -55,9 +197,6 @@ diversity:
   # Пороги, которым обязан удовлетворять ОЧИЩЕННЫЙ датасет. Стадия diversity
   # падает, если нарушен хоть один: набор из 30 однотипных строк проходит
   # и схему, и дедупликацию, и сплит — формально он безупречен и бесполезен.
-  # Разбор такого случая: один системный промпт на все строки, ответы длиной
-  # 356–440 символов, сквозные слова во всех ответах. Лосс на нём падает,
-  # а модель выучивает шаблон вместо задачи.
   #
   # Пороги — не догма: их можно менять под свою задачу, но только в эту сторону
   # и только с обоснованием в docs/datasheet.md. «Снизил, чтобы позеленело» —
@@ -71,9 +210,6 @@ diversity:
                              # решать за весь датасет
   min_answer_len_ratio: 1.6  # p90/p10 длин ответа ассистента. Ответы одной
                              # длины — верный признак сгенерированного шаблона.
-                             # Если у вашей задачи ответы законно однотипные
-                             # (метки классов, да/нет) — снижайте порог и
-                             # покажите разнообразие на другой оси в datasheet.
   max_same_length_share: 0.25   # доля примеров с самой частой длиной ответа
   max_duplicate_answer_share: 0.30  # доля ответов-повторов (точные совпадения)
 

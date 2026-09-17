@@ -1,0 +1,359 @@
+schema: '2.0'
+stages:
+  collect:
+    cmd: python -m src.collect
+    deps:
+    - path: dataset/Answers.csv
+      hash: md5
+      md5: 9f3c8db1c83ba39b8b6b82fc7df05739
+      size: 109924186
+    - path: dataset/Questions.csv
+      hash: md5
+      md5: c8b1088645cfb2dc70d60dff72089fd1
+      size: 104276279
+    - path: dataset/Tags.csv
+      hash: md5
+      md5: 2b8dface65c6d4b02857149b4ea20761
+      size: 4653766
+    - path: src/collect.py
+      hash: md5
+      md5: 17ecffbf0d7ac4356571079d3318e2d1
+      size: 10497
+    - path: src/config.py
+      hash: md5
+      md5: 8502dacd08a236b4ca4a4b733befa5e9
+      size: 2381
+    params:
+      params.yaml:
+        collect:
+          version: v1
+          sources:
+            v1:
+              questions: dataset/Questions.csv
+              answers: dataset/Answers.csv
+              tags: dataset/Tags.csv
+            v2:
+              questions: dataset/Questions.csv
+              answers: dataset/Answers.csv
+              tags: dataset/Tags.csv
+          n_rows:
+            v1: 2200
+            v2: 6000
+          max_per_topic:
+            v1: 60
+            v2: 120
+          topics:
+          - r
+          - regression
+          - machine-learning
+          - time-series
+          - probability
+          - hypothesis-testing
+          - self-study
+          - distributions
+          - logistic
+          - classification
+          - correlation
+          - statistical-significance
+          - bayesian
+          - anova
+          - normal-distribution
+          - multiple-regression
+          - mixed-model
+          - clustering
+          - neural-networks
+          - mathematical-statistics
+          - confidence-interval
+          - categorical-data
+          - generalized-linear-model
+          - variance
+          - data-visualization
+          - estimation
+          - forecasting
+          - t-test
+          - pca
+          - sampling
+          - cross-validation
+          - repeated-measures
+          - spss
+          - svm
+          - chi-squared
+          - maximum-likelihood
+          - predictive-models
+          - multivariate-analysis
+          - survival
+          - data-transformation
+          - modeling
+          - p-value
+          - feature-selection
+          - econometrics
+          - panel-data
+          - python
+          - data-mining
+          - interaction
+          - linear-model
+          - binomial
+          - random-forest
+          - nonparametric
+          - arima
+          - optimization
+          - least-squares
+          - model-selection
+          - standard-deviation
+          - poisson
+          - interpretation
+          - sample-size
+          - mean
+          - dataset
+          - conditional-probability
+          - prediction
+          - multiple-comparisons
+          - bootstrap
+          - experiment-design
+          - random-variable
+          - autocorrelation
+          - simulation
+          - covariance
+          - missing-data
+          - expected-value
+          - regression-coefficients
+          - factor-analysis
+          - mcmc
+          - outliers
+          - standard-error
+          - inference
+          - ordinal
+          - deep-learning
+          - cart
+          - residuals
+          - binary-data
+          - random-effects-model
+          - goodness-of-fit
+          - stochastic-processes
+          - nonlinear-regression
+          - cox-model
+          - monte-carlo
+          - proportion
+          - lasso
+          - heteroscedasticity
+          - meta-analysis
+          - k-means
+          - scikit-learn
+          - multicollinearity
+          - text-mining
+          - aic
+          - descriptive-statistics
+          - matrix
+          - likelihood
+          - dimensionality-reduction
+          - bias
+          - fixed-effects-model
+          - effect-size
+          - normality
+          - power-analysis
+          - roc
+          - count-data
+          - prior
+          - stationarity
+          - kernel-trick
+          - naive-bayes
+          - regularization
+          - gaussian-process
+          - causality
+          - validation
+          - quantiles
+          - posterior
+          - robust
+          - gradient-descent
+          - odds-ratio
+          - bayes
+          - garch
+          min_answer_score: 1
+          system_prompts:
+          - Ты отвечаешь на вопросы по статистике и машинному обучению. Дан 
+            вопрос пользователя; дай точный ответ по существу, при необходимости
+            с формулой или примером кода.
+          - 'Перед тобой вопрос с сайта вопросов и ответов по статистике. Ответь на
+            него так, как ответил бы опытный аналитик: по делу, без воды и общих слов.'
+          - Ты — ассистент по анализу данных и статистике. Отвечай на вопрос 
+            пользователя кратко и по делу, объясняя ключевую идею и её 
+            обоснование.
+          - 'Задача: ответить на вопрос по статистике или машинному обучению. Опирайся
+            на общепринятые методы и, если уместно, приведи короткий пример на R или
+            Python.'
+          - Дан вопрос по статистике или ML. Дай корректный ответ с 
+            обоснованием; если возможных решений несколько, назови основное и 
+            объясни выбор.
+    outs:
+    - path: data/raw.jsonl
+      hash: md5
+      md5: 254ed5f0f1533bbd9185e10f0989de37
+      size: 5681666
+    - path: metrics/collect.json
+      hash: md5
+      md5: bfa311ec956c5fe815da0e67e6271550
+      size: 315
+  clean:
+    cmd: python -m src.clean
+    deps:
+    - path: data/raw.jsonl
+      hash: md5
+      md5: 254ed5f0f1533bbd9185e10f0989de37
+      size: 5681666
+    - path: src/clean.py
+      hash: md5
+      md5: 97d46ad661da9bbaef46e6b52506b935
+      size: 5040
+    - path: src/config.py
+      hash: md5
+      md5: 8502dacd08a236b4ca4a4b733befa5e9
+      size: 2381
+    - path: src/dedup.py
+      hash: md5
+      md5: fde80d28430f1612c4cbb7f0fdcc1f4d
+      size: 2757
+    - path: src/pii.py
+      hash: md5
+      md5: 54de6f3690578d83cfc17094d2d2aa7a
+      size: 2397
+    - path: src/schema.py
+      hash: md5
+      md5: ad834fcb5caa483d3d5d5bfabb433cc0
+      size: 3054
+    - path: src/stats.py
+      hash: md5
+      md5: a54925032eff4769647b5775d72dd423
+      size: 2222
+    - path: src/textnorm.py
+      hash: md5
+      md5: c7e2f072fe9cc4d2b5af76f5c360c6c0
+      size: 1844
+    params:
+      params.yaml:
+        clean:
+          min_user_chars: 30
+          max_user_chars: 4000
+          min_assistant_chars: 2
+          near_dup:
+            enabled: true
+            shingle_words: 4
+            num_perm: 64
+            threshold: 0.85
+          pii:
+            enabled: true
+        paths.clean: data/clean.jsonl
+    outs:
+    - path: data/clean.jsonl
+      hash: md5
+      md5: c2617e4c50083e7ebe4393cafbf234b5
+      size: 5520051
+    - path: metrics/clean.json
+      hash: md5
+      md5: f644b33d6276224af1d77c2ffe6aef48
+      size: 461
+  diversity:
+    cmd: python -m src.diversity
+    deps:
+    - path: data/clean.jsonl
+      hash: md5
+      md5: c2617e4c50083e7ebe4393cafbf234b5
+      size: 5520051
+    - path: src/config.py
+      hash: md5
+      md5: 8502dacd08a236b4ca4a4b733befa5e9
+      size: 2381
+    - path: src/diversity.py
+      hash: md5
+      md5: 4cdb49ee03afa3b48592ec57beac2d9b
+      size: 6881
+    - path: src/schema.py
+      hash: md5
+      md5: ad834fcb5caa483d3d5d5bfabb433cc0
+      size: 3054
+    - path: src/stats.py
+      hash: md5
+      md5: a54925032eff4769647b5775d72dd423
+      size: 2222
+    - path: src/textnorm.py
+      hash: md5
+      md5: c7e2f072fe9cc4d2b5af76f5c360c6c0
+      size: 1844
+    params:
+      params.yaml:
+        diversity:
+          min_examples: 1000
+          min_system_prompts: 3
+          min_groups: 50
+          max_group_share: 0.1
+          min_answer_len_ratio: 1.6
+          max_same_length_share: 0.25
+          max_duplicate_answer_share: 0.3
+        paths.clean: data/clean.jsonl
+        split.group_key: topic
+    outs:
+    - path: metrics/diversity.json
+      hash: md5
+      md5: 45db8071bd2f3b72b8e419e7eaea1ce1
+      size: 670
+  split:
+    cmd: python -m src.split
+    deps:
+    - path: data/clean.jsonl
+      hash: md5
+      md5: c2617e4c50083e7ebe4393cafbf234b5
+      size: 5520051
+    - path: src/config.py
+      hash: md5
+      md5: 8502dacd08a236b4ca4a4b733befa5e9
+      size: 2381
+    - path: src/contamination.py
+      hash: md5
+      md5: 9293919fc5964067833313514c6f9f2b
+      size: 2249
+    - path: src/dedup.py
+      hash: md5
+      md5: fde80d28430f1612c4cbb7f0fdcc1f4d
+      size: 2757
+    - path: src/schema.py
+      hash: md5
+      md5: ad834fcb5caa483d3d5d5bfabb433cc0
+      size: 3054
+    - path: src/split.py
+      hash: md5
+      md5: e2eb44d73f82098a5af76a465d463f8c
+      size: 4431
+    - path: src/textnorm.py
+      hash: md5
+      md5: c7e2f072fe9cc4d2b5af76f5c360c6c0
+      size: 1844
+    params:
+      params.yaml:
+        contamination:
+          threshold: 0.85
+        paths.test: data/test.jsonl
+        paths.train: data/train.jsonl
+        paths.val: data/val.jsonl
+        split:
+          group_key: topic
+          ratios:
+            train: 0.8
+            val: 0.1
+            test: 0.1
+          seed: 42
+    outs:
+    - path: data/test.jsonl
+      hash: md5
+      md5: 9e871cf1d5e5c09ebf3b990a1076dac8
+      size: 562585
+    - path: data/train.jsonl
+      hash: md5
+      md5: cd8a1c4aa307df2f1f67b0ddec4b1a70
+      size: 4427985
+    - path: data/val.jsonl
+      hash: md5
+      md5: 52cacd2ba57a1948fcf9ab03b36e0530
+      size: 529481
+    - path: metrics/split.json
+      hash: md5
+      md5: ce282fabb2ee14c4c396aa5169f2abd8
+      size: 528

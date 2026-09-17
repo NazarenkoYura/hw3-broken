@@ -9,6 +9,10 @@
 import sys
 from pathlib import Path
 
+for _stream in (sys.stdout, sys.stderr):
+    if hasattr(_stream, "reconfigure"):
+        _stream.reconfigure(encoding="utf-8", errors="replace")
+
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from src.config import load_params  # noqa: E402
@@ -35,7 +39,7 @@ def main() -> int:
     print(f"  пересечение по id:        {rep['id_overlap']}")
     print(f"  пересечение по тексту:    {rep['text_overlap']}")
     print(f"  пересечение по группам:   {rep['group_overlap']}")
-    print(f"  near-dup пар train↔test:  {rep['near_dup_pairs']}")
+    print(f"  near-dup пар train<->test:  {rep['near_dup_pairs']}")
 
     if is_clean(rep):
         print("контаминации нет")

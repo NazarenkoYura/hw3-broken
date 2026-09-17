@@ -1,11 +1,16 @@
 """Стадия clean: валидация схемы, фильтр длин, чистка ПДн, дедупликация."""
 
 import json
+import sys
 import time
 from pathlib import Path
 
+for _stream in (sys.stdout, sys.stderr):
+    if hasattr(_stream, "reconfigure"):
+        _stream.reconfigure(encoding="utf-8", errors="replace")
+
 from src.config import load_params
-from src.dedup import exact_duplicates
+from src.dedup import exact_duplicates, near_duplicates
 from src.pii import scrub
 from src.schema import Example, dump, iter_examples
 from src.stats import percentile
@@ -66,8 +71,23 @@ def main() -> None:
     exact = set(exact_duplicates(keys))
     kept = [ex for i, ex in enumerate(kept) if i not in exact]
 
-    # 5. TODO: сюда просится ещё один шаг дедупликации.
+    # 5. Near-dup: переформулировки и перестановки, которые точный хэш не видит.
+    #    Идёт после точной дедупликации: дешёвый шаг снимает основную массу, а
+    #    дорогой MinHash работает по остатку. Тексты нормализованы так же, как в
+    #    шаге 4, иначе точная и неточная дедупликация мерили бы разное.
     near: set[int] = set()
+    nd = cfg["near_dup"]
+    if nd.get("enabled", True) and kept:
+        near_keys = [normalize_text(ex.user) for ex in kept]
+        near = set(
+            near_duplicates(
+                near_keys,
+                shingle_words=nd["shingle_words"],
+                num_perm=nd["num_perm"],
+                threshold=nd["threshold"],
+            )
+        )
+        kept = [ex for i, ex in enumerate(kept) if i not in near]
 
     out = Path(paths["clean"])
     out.parent.mkdir(parents=True, exist_ok=True)
@@ -75,6 +95,7 @@ def main() -> None:
         for ex in kept:
             fh.write(dump(ex) + "\n")
 
+    elapsed = round(time.perf_counter() - started, 2)
     metrics = {
         "version": params["collect"]["version"],
         "rows_in": rows_in,
@@ -87,7 +108,6 @@ def main() -> None:
         "groups": len({normalize_group(ex.topic) for ex in kept}),
         "user_chars": percentiles([len(ex.user) for ex in kept]),
         "assistant_chars": percentiles([len(ex.assistant) for ex in kept]),
-        "seconds": round(time.perf_counter() - started, 2),
     }
     mpath = Path(paths["metrics_clean"])
     mpath.parent.mkdir(parents=True, exist_ok=True)
@@ -96,7 +116,7 @@ def main() -> None:
     print(
         f"clean: {rows_in} → {len(kept)} строк "
         f"(длина -{dropped_length}, точные -{len(exact)}, near-dup -{len(near)}), "
-        f"ПДн замаскировано в {pii_rows} строках, {metrics['seconds']} с"
+        f"ПДн замаскировано в {pii_rows} строках, {elapsed} с"
     )
 
 
