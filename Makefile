@@ -27,7 +27,7 @@ contamination:
 	uv run python scripts/check_contamination.py
 
 check:
-	bash tests/check.sh
+	PATH="$$HOME/.local/bin:$$PATH" bash tests/check.sh
 
 clean:
 	rm -rf data metrics/*.json params.yaml.bak params.yaml.orig
